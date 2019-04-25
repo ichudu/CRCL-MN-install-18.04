@@ -43,8 +43,7 @@ fi
 
 
 #ADD_SWAP=N
-GITHUB_DL=https://github.com/ichudu/Crowdclassic/releases/download/v0.12.1.9-beta/CRowdCLassicCore-bin.0.12.1.9.x64.linux18.04.tar.gz
-COIN_ZIP=CRowdCLassicCore-bin.0.12.1.9.x64.linux18.04.tar.gz
+GITHUB_DL=https://github.com/CRowdCLassic/crowdclassic-core.git
 RPCPORT=11998
 CRCLPORT=12875
 
@@ -207,26 +206,26 @@ mkdir $HOME/tempcrcl
 chmod -R 777 $HOME/tempcrcl
 cd $HOME/tempcrcl
 
-sudo wget $GITHUB_DL
-sudo tar -xvf $COIN_ZIP
+sudo git clone $GITHUB_DL
+cd crowdclassic-core
+chmod 777 autogen.sh
+chmod +x share/genbuild.sh
+./autogen.sh
+./configure
+sudo make
 cd ~
 
 cd $HOME
 mkdir $HOME/Crowdclassic
 mkdir $HOME/.crowdclassiccore
-cp $HOME/tempcrcl/CRowdCLassicCore-bin.0.12.1.9.x64.linux18.04/crowdclassicd $HOME/Crowdclassic
-cp $HOME/tempcrcl/CRowdCLassicCore-bin.0.12.1.9.x64.linux18.04/crowdclassic-cli $HOME/Crowdclassic
+cp $HOME/tempcrcl/crowdclassic-core/src/crowdclassicd $HOME/Crowdclassic
+cp $HOME/tempcrcl/crowdclassic-core/src/crowdclassic-cli $HOME/Crowdclassic
 
 ln -s $HOME/Crowdclassic/crowdclassic-cli /usr/local/bin/crowdclassic-cli
 ln -s $HOME/Crowdclassic/crowdclassicd /usr/local/bin/crowdclassicd
 
 chmod -R 777 $HOME/Crowdclassic
 chmod -R 777 $HOME/.crowdclassiccore
-
-cd $HOME/.crowdclassiccore
-sudo wget https://github.com/ichudu/Crowdclassic/releases/download/v0.12.1.9-beta/blocks.zip
-sudo unzip blocks.zip
-sudo rm -rf blocks.zip
 cd ~
 
 echo ""
