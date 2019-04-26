@@ -1,7 +1,7 @@
 
-# CRowdCLassic Masternode Setup Guide (Ubuntu 18.04)
+# CRowdCLassic Masternode Setup Guide (Ubuntu 16.04 or 18.04)
 
-This guide will assist you in setting up a CRowdCLassic Masternode on a Linux Server running Ubuntu 18.04.
+This guide will assist you in setting up a CRowdCLassic Masternode on a Linux Server running Ubuntu 16.04 or 18.04.
 
 This tutorial will guide you through the steps necessary to setup a CRowdCLassic Masternode on a VPS server that is controlled via your remote wallet. This is the most secure way of configuring a masternode as the 1,000 CRCL collateral resides in your local wallet and NOT within the remote masternode.
 
@@ -19,7 +19,7 @@ Your local wallet is not required to be kept open and you can store it as a cold
 ***
 ### Requirements
 1) **1,000 CRCL.**
-2) **VPS running Linux Ubuntu 18.04.**
+2) **VPS running Linux Ubuntu 16.04 or 18.04.**
 3) **Windows local wallet.**
 4) **SSH client such as **[Putty](https://putty.org)** or [Bitvise](https://dl.bitvise.com/BvSshClient-Inst.exe)**
 
@@ -84,19 +84,23 @@ The transaction and output ID from the deposit you made into your masternode pub
 ***Step 7***
 * Paste the code below into Putty to ***download*** the masternode install script.
 
-`wget -q https://github.com/ichudu/CRCL-MN-install-18.04/releases/download/0.2.1/cold_mn_install.sh`
+`apt-get install git`
+`git clone https://github.com/ichudu/CRCL-MN-install-Ubuntu.git`
 
 ***Step 8***
 * Paste the code below into Putty, then press ***enter*** to start the masternode installation.
 
+`cd CRCL-MN-install-Ubuntu`
 `bash cold_mn_install.sh`
 
+* Add swap file otherwise you may fail to compile!
+
 ***Step 9***
-* Wait for the installation to ***finish*** (this will take approximately 10-20 minutes)
+* Wait for the installation to ***finish*** (Depending on your VPS and internet bandwidth it may take up to 60 minutes.)
 
 ***Step 10***
 * When prompted enter your ***masternode genkey*** and press ***enter***. (you can copy/paste this information from your local wallet)
-
+* Wait for the wallet to synchronise fully.
 
 ***
 
@@ -125,7 +129,7 @@ Click ***File - Save***
 ![mn-config](https://i.imgur.com/3j115NN.jpg)
 
 ***Step 3***
-* Close your wallet and restart it.
+* Close your wallet and restart it. Wait for the wallet to synchronise fully. 
 
 Go to the ***Masternodes*** tab and inside that to the ***My Masternodes*** tab, select your new masternode and click on ***Start alias*** and it's status should change to ***PRE-ENABLED***. If you see ***WATCHDOG_EXPIRED*** don't worry, it takes a little for sentinel to send the correct status.
 
