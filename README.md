@@ -85,12 +85,14 @@ The transaction and output ID from the deposit you made into your masternode pub
 * Paste the code below into Putty to ***download*** the masternode install script.
 
 `apt-get install git`
+
 `git clone https://github.com/ichudu/CRCL-MN-install-Ubuntu.git`
 
 ***Step 8***
 * Paste the code below into Putty, then press ***enter*** to start the masternode installation.
 
 `cd CRCL-MN-install-Ubuntu`
+
 `bash cold_mn_install.sh`
 
 * Add swap file otherwise you may fail to compile!
