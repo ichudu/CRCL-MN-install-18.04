@@ -1,7 +1,7 @@
 #!/bin/bash
 # mn_install.sh
-# Version 0.2
-# Date : 17.04.2019
+# Version 0.12.1.9S
+# Date : 26.04.2019
 # This script will install a CRCL Cold Wallet Masternode in the default folder location
 
 if [ -f /etc/os-release ]; then
@@ -34,17 +34,16 @@ else
     VER=$(uname -r)
 fi
 
-if [ "$OS" == "Ubuntu" ] && [ "$VER" == "18.04" ]; then
+if [ "$OS" == "Ubuntu" ] && [ "$VER" == "18.04" -o "16.04" ]; then
   echo "$OS $VER : OK"
 else
-  echo "This script should be run on Ubuntu 18.04 only"
+  echo "This script should be run on Ubuntu 18.04 and 16.04 only"
   exit 1
 fi
 
 
 #ADD_SWAP=N
-GITHUB_DL=https://github.com/ichudu/Crowdclassic/releases/download/v0.12.1.9-beta/CRowdCLassicCore-bin.0.12.1.9.x64.linux18.04.tar.gz
-COIN_ZIP=CRowdCLassicCore-bin.0.12.1.9.x64.linux18.04.tar.gz
+GITHUB_DL=https://github.com/CRowdCLassic/crowdclassic-core.git
 RPCPORT=11998
 CRCLPORT=12875
 
@@ -122,11 +121,11 @@ fi
     #remove old ufw port allow
     sudo ufw delete allow 12875/tcp > /dev/null 2>&1
     #remove old files
+    sudo rm -rf ~/tempcrcl  > /dev/null 2>&1
     sudo rm -rf ~/Crowdclassic > /dev/null 2>&1
-    sudo rm -rf ~/.crowdclassiccore > /dev/null 2>&1
+    sudo rm -rf ~/.crowdclassiccore/crowdclassic.conf > /dev/null 2>&1
     sudo rm -rf ~/sentinelLinux > /dev/null 2>&1
     sudo rm -rf ~/venv > /dev/null 2>&1
-    sudo rm -rf CRowdCLassicCore*.gz CRowdCLassicCore*.gz.* > /dev/null 2>&1
     #remove binaries and CRowdCLassic utilities
     cd /usr/bin && sudo rm crowdclassic-cli crowdclassic-tx crowdclassicd > /dev/null 2>&1
     cd /usr/local/bin && sudo rm crowdclassic-cli crowdclassic-tx crowdclassicd > /dev/null 2>&1
@@ -197,7 +196,7 @@ sudo apt-get -y -q install curl tar wget -y
 sudo apt-get install unzip -y
 sudo apt-get install libzmq3-dev libminiupnpc-dev libssl-dev libevent-dev -y
 sudo apt-get install build-essential libtool autotools-dev automake pkg-config -y
-sudo apt-get install libssl-dev libevent-dev bsdmainutils software-properties-common -y
+sudo apt-get install libssl-dev libevent-dev bsdmainutils software-properties-common libgmp3-dev -y
 sudo apt-get -y -q install libboost-all-dev -y
 sudo add-apt-repository ppa:bitcoin/bitcoin -y
 sudo apt-get update
@@ -207,27 +206,31 @@ mkdir $HOME/tempcrcl
 chmod -R 777 $HOME/tempcrcl
 cd $HOME/tempcrcl
 
-sudo wget $GITHUB_DL
-sudo tar -xvf $COIN_ZIP
-cd ~
+sudo git clone $GITHUB_DL
+cd crowdclassic-core
+chmod 777 autogen.sh
+chmod +x share/genbuild.sh
+./autogen.sh
+./configure
+sudo make
 
 cd $HOME
 mkdir $HOME/Crowdclassic
 mkdir $HOME/.crowdclassiccore
-cp $HOME/tempcrcl/CRowdCLassicCore-bin.0.12.1.9.x64.linux18.04/crowdclassicd $HOME/Crowdclassic
-cp $HOME/tempcrcl/CRowdCLassicCore-bin.0.12.1.9.x64.linux18.04/crowdclassic-cli $HOME/Crowdclassic
+cp $HOME/tempcrcl/crowdclassic-core/src/crowdclassicd $HOME/Crowdclassic
+cp $HOME/tempcrcl/crowdclassic-core/src/crowdclassic-cli $HOME/Crowdclassic
+cp $HOME/tempcrcl/crowdclassic-core/src/crowdclassic-tx $HOME/Crowdclassic
 
 ln -s $HOME/Crowdclassic/crowdclassic-cli /usr/local/bin/crowdclassic-cli
 ln -s $HOME/Crowdclassic/crowdclassicd /usr/local/bin/crowdclassicd
+ln -s $HOME/Crowdclassic/crowdclassic-tx /usr/local/bin/crowdclassic-tx
 
 chmod -R 777 $HOME/Crowdclassic
 chmod -R 777 $HOME/.crowdclassiccore
-
-cd $HOME/.crowdclassiccore
-sudo wget https://github.com/ichudu/Crowdclassic/releases/download/v0.12.1.9-beta/blocks.zip
-sudo unzip blocks.zip
-sudo rm -rf blocks.zip
 cd ~
+sudo rm -rf ~/tempcrcl  > /dev/null 2>&1
+sudo apt-get autoremove -y
+sudo apt-get clean -y
 
 echo ""
 echo "==============================================="
@@ -286,9 +289,9 @@ EOF
 
 echo "Configuration $locateCRowdCLassicConf updated."
 echo "Starting CRowdCLassic daemon from $PWD"
-echo " Waiting 20 seconds after starting..."
+echo " Waiting 30 seconds after starting..."
 sudo crowdclassicd -daemon
-sleep 20
+sleep 30
 crowdclassicGetInfoOutput=$(sudo crowdclassic-cli getinfo)
 while [[ ! ($crowdclassicGetInfoOutput = *"version"*) ]]; do
 	sleep 10
@@ -297,7 +300,7 @@ done
 
 echo "-----------------------------------------------"
 echo "Now waiting Masternode Sync"
-echo "Checking every 2 seconds ..."
+echo "Checking every 5 seconds ..."
 echo "-----------------------------------------------"
 spin='-\|/'
 masternodeStartOutput=$(sudo crowdclassic-cli mnsync status | grep IsSynced | tr -d ,)
@@ -309,7 +312,7 @@ while [[ ! ($masternodeStartOutput = *"true"*) ]]; do
 #        masternodeStartOutput=$(sudo crowdclassic-cli masternode start)
         masternodeStartOutput=$(sudo crowdclassic-cli mnsync status | grep IsSynced | tr -d ,)
         printf "\r$block | ${spin:$i:1} : $masternodeStartOutput                "
-        sleep 2
+        sleep 5
 done
 echo ""
 echo "Add sentinelLinux in crontab"
@@ -322,7 +325,6 @@ masternodeStartedOutput=$(sudo crowdclassic-cli masternode status)
 echo ""
 echo "$masternodeStartedOutput"
 sleep 3
+
+sudo rm -rf ~/cold_mn_install.sh  > /dev/null 2>&1
 cd ~
-sudo rm -rf tempcrcl
-sudo apt-get autoremove -y
-sudo apt-get clean -y
