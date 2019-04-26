@@ -326,5 +326,5 @@ echo ""
 echo "$masternodeStartedOutput"
 sleep 3
 
-sudo rm -rf ~/cold_mn_install.sh  > /dev/null 2>&1
+sudo rm -rf ~/CRCL-MN-install-Ubuntu  > /dev/null 2>&1
 cd ~
